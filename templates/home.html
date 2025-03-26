@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+	    background: url('{{ url_for("static", filename="mumbaiIndians.png") }}') repeat;
+            background-size: 200px 200px;
+
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .btn {
+            display: block;
+            width: 200px;
+            padding: 15px;
+            margin: 10px;
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            border-radius: 5px;
+            font-size: 18px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 14px;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>OweZone</h2>
+        <a href="/rankings" class="btn">Enter rankings for today</a>
+        <a href="/balances" class="btn">Check balances</a>
+    </div>
+    <div class="footer">Made by Jay Tiwari</div>
+</body>
+</html>
+

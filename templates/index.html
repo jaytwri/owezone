@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Rankings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: url('{{ url_for("static", filename="mumbaiIndians.png") }}') repeat;
+            background-size: 200px 200px;            
+	    margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+            font-size: 20px;
+        }
+        input[type="date"],
+        input[type="text"],
+        input[type="submit"] {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        input[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+        .balances-link {
+            display: block;
+            margin-top: 15px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .balances-link:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Enter Rankings for Today</h2>
+        <form action="/submit" method="POST">
+            Date: <input type="date" name="date" required><br>
+            Player 1st: <input type="text" name="player1" required><br>
+            Player 2nd: <input type="text" name="player2" required><br>
+            Player 3rd: <input type="text" name="player3" required><br>
+            Player 4th: <input type="text" name="player4" required><br>
+            Player 5th: <input type="text" name="player5" required><br>
+            Player 6th: <input type="text" name="player6" required><br>
+            <input type="submit" value="Submit">
+        </form>
+        <a href="/balances" class="balances-link">View Balances</a>
+    </div>
+    <div class="footer">Made by Jay Tiwari</div>
+</body>
+</html>
