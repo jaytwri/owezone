@@ -6,9 +6,8 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background: url('{{ url_for("static", filename="mumbaiIndians.png") }}') repeat;
-            background-size: 200px 200px;            
-	    margin: 0;
+            background-color: #f4f4f4;
+            margin: 0;
             padding: 0;
         }
         .container {
@@ -25,7 +24,8 @@
         }
         input[type="date"],
         input[type="text"],
-        input[type="submit"] {
+        input[type="submit"],
+        select {
             width: 100%;
             padding: 8px;
             margin: 8px 0;
@@ -61,18 +61,40 @@
             color: #888;
         }
     </style>
+    <script>
+        function updatePlayerFields() {
+            var numPlayers = document.getElementById("numPlayers").value;
+            var playersDiv = document.getElementById("players");
+            playersDiv.innerHTML = "";
+            
+            for (var i = 1; i <= numPlayers; i++) {
+                var label = document.createElement("label");
+                label.innerHTML = "Player " + i + ": ";
+                var input = document.createElement("input");
+                input.type = "text";
+                input.name = "player" + i;
+                input.required = true;
+                playersDiv.appendChild(label);
+                playersDiv.appendChild(input);
+                playersDiv.appendChild(document.createElement("br"));
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
         <h2>Enter Rankings for Today</h2>
         <form action="/submit" method="POST">
             Date: <input type="date" name="date" required><br>
-            Player 1st: <input type="text" name="player1" required><br>
-            Player 2nd: <input type="text" name="player2" required><br>
-            Player 3rd: <input type="text" name="player3" required><br>
-            Player 4th: <input type="text" name="player4" required><br>
-            Player 5th: <input type="text" name="player5" required><br>
-            Player 6th: <input type="text" name="player6" required><br>
+            Number of Players: 
+            <select id="numPlayers" name="numPlayers" onchange="updatePlayerFields()" required>
+                <option value="6">6</option>
+                <option value="5">5</option>
+                <option value="4">4</option>
+                <option value="3">3</option>
+                <option value="2">2</option>
+            </select><br>
+            <div id="players"></div>
             <input type="submit" value="Submit">
         </form>
         <a href="/balances" class="balances-link">View Balances</a>

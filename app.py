@@ -7,7 +7,7 @@ app.secret_key = 'your_secret_key'  # Change this to a strong, random secret key
 
 # Hardcoded users with hashed passwords
 users = {
-    "Jay": generate_password_hash("password123"),
+    "Jay": generate_password_hash("masterofthefuture"),
     "Yash": generate_password_hash("securepass"),
     "Pari": generate_password_hash("mypassword"),
     "Aaryan": generate_password_hash("letmein"),
@@ -84,8 +84,9 @@ def submit():
     if session['user'] != "Jay":  # Restrict updates to Jay only
         return "You are not authorized to submit results.", 403
 
-    players = [request.form[f'player{i}'] for i in range(1, 7)]
     date = request.form['date']
+    players = [request.form.get(f'player{i}') for i in range(1, 7) if request.form.get(f'player{i}')]
+    num_players = len(players)
 
     # Validate that all players are from the allowed list
     if not all(player in allowed_players for player in players):
@@ -93,23 +94,36 @@ def submit():
 
     conn = sqlite3.connect('tournament.db')
     c = conn.cursor()
-    c.execute("INSERT INTO results (date, player1, player2, player3, player4, player5, player6) VALUES (?, ?, ?, ?, ?, ?, ?)", 
-              (date, *players))
+    placeholders = ', '.join(['?'] * num_players)
+    columns = ', '.join(f'player{i+1}' for i in range(num_players))
 
-    transactions = [
-        (players[5], players[0], 300),  # 6th pays 1st
-        (players[4], players[1], 200),  # 5th pays 2nd
-        (players[3], players[2], 100)   # 4th pays 3rd
-    ]
+    query = f"INSERT INTO results (date, {columns}) VALUES (?, {placeholders})"
 
+    c.execute(query, (date, *players[:num_players]))
+
+    # c.execute(f"INSERT INTO results (date, {', '.join(f'player{i+1}' for i in range(num_players))}) VALUES (?, {', '.join(['?'] * num_players)})", 
+    #           (date, *players))
+    
+    
+    transactions = []
+    if num_players == 6:
+        transactions = [(players[5], players[0], 300), (players[4], players[1], 200), (players[3], players[2], 100)]
+    elif num_players == 5:
+        transactions = [(players[4], players[0], 300), (players[3], players[1], 200)]
+    elif num_players == 4:
+        transactions = [(players[3], players[0], 300), (players[2], players[1], 200)]
+    elif num_players == 3:
+        transactions = [(players[2], players[0], 300)]
+    elif num_players == 2:
+        transactions = [(players[1], players[0], 300)]
+    
     for debtor, creditor, amount in transactions:
-        c.execute("INSERT INTO debts (date, debtor, creditor, amount) VALUES (?, ?, ?, ?)",
-                  (date, debtor, creditor, amount))
-        c.execute("INSERT INTO balances (player, balance) VALUES (?, ?) ON CONFLICT(player) DO UPDATE SET balance = balance - ?",
-                  (debtor, -amount, amount))
-        c.execute("INSERT INTO balances (player, balance) VALUES (?, ?) ON CONFLICT(player) DO UPDATE SET balance = balance + ?",
-                  (creditor, amount, amount))
-
+        c.execute("INSERT INTO debts (date, debtor, creditor, amount) VALUES (?, ?, ?, ?)", (date, debtor, creditor, amount))
+        c.execute("INSERT INTO balances (player, balance) VALUES (?, 0) ON CONFLICT(player) DO NOTHING", (debtor,))
+        c.execute("INSERT INTO balances (player, balance) VALUES (?, 0) ON CONFLICT(player) DO NOTHING", (creditor,))
+        c.execute("UPDATE balances SET balance = balance - ? WHERE player = ?", (amount, debtor))
+        c.execute("UPDATE balances SET balance = balance + ? WHERE player = ?", (amount, creditor))
+    
     conn.commit()
     conn.close()
     return redirect(url_for('balances'))
@@ -121,25 +135,19 @@ def balances():
     
     conn = sqlite3.connect('tournament.db')
     c = conn.cursor()
-
     c.execute("SELECT * FROM balances")
     balances = c.fetchall()
-
     c.execute("SELECT debtor, creditor, SUM(amount) FROM debts GROUP BY debtor, creditor")
     debts = c.fetchall()
-
     conn.close()
     return render_template('balances.html', balances=balances, debts=debts)
 
-# Route to clear all transactions
 @app.route('/reset', methods=['POST'])
 def reset():
     if "user" not in session:
         return redirect(url_for("login"))
-
-    if session['user'] != "Jay":  # Restrict reset to Jay only
+    if session['user'] != "Jay":
         return "You are not authorized to reset the tournament.", 403
-
     conn = sqlite3.connect('tournament.db')
     c = conn.cursor()
     c.execute("DELETE FROM results")
@@ -151,4 +159,3 @@ def reset():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
